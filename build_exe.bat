@@ -2,8 +2,10 @@
 REM ─────────────────────────────────────────────────────────────────────────────
 REM  Build EDF Scalp Inspector  (Windows)
 REM  Output: dist\ScalpInspector-Windows.zip  (ready to share)
+REM  Safe to double-click from any location -- always runs from its own folder.
 REM ─────────────────────────────────────────────────────────────────────────────
 setlocal
+cd /d "%~dp0"
 
 echo [1/4] Installing / upgrading PyInstaller...
 python -m pip install --quiet --upgrade pyinstaller
