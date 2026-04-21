@@ -1,0 +1,115 @@
+name: Build & Release ScalpInspector
+
+# Trigger: push a version tag like v1.0.0  →  builds all three platforms
+#           and creates a GitHub Release with zipped downloads.
+# Manual:   Actions → "Build & Release ScalpInspector" → Run workflow
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: false
+        default: 'dev-build'
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: ScalpInspector-Windows
+            archive_cmd: Compress-Archive -Path dist/ScalpInspector -DestinationPath ScalpInspector-Windows.zip
+            archive_file: ScalpInspector-Windows.zip
+          - os: ubuntu-latest
+            artifact: ScalpInspector-Linux
+            archive_cmd: zip -r ScalpInspector-Linux.zip dist/ScalpInspector
+            archive_file: ScalpInspector-Linux.zip
+          - os: macos-latest
+            artifact: ScalpInspector-macOS
+            archive_cmd: zip -r ScalpInspector-macOS.zip dist/ScalpInspector.app
+            archive_file: ScalpInspector-macOS.zip
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install tkinter (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y python3-tk
+
+      - name: Install dependencies
+        working-directory: tools/scalp_inspector
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          python -m pip install -r requirements.txt
+
+      - name: Build executable
+        working-directory: tools/scalp_inspector
+        run: python -m PyInstaller --clean --noconfirm scalp_inspector.spec
+
+      - name: Archive (Windows)
+        if: runner.os == 'Windows'
+        working-directory: tools/scalp_inspector
+        shell: pwsh
+        run: Compress-Archive -Path dist/ScalpInspector -DestinationPath ${{ matrix.archive_file }}
+
+      - name: Archive (macOS / Linux)
+        if: runner.os != 'Windows'
+        working-directory: tools/scalp_inspector
+        run: ${{ matrix.archive_cmd }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: tools/scalp_inspector/${{ matrix.archive_file }}
+          retention-days: 30
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    # Only create a Release for real version tags (not manual dev-build runs)
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ScalpInspector ${{ github.ref_name }}
+          body: |
+            ## EDF Scalp Channel Inspector ${{ github.ref_name }}
+
+            Single-click GUI tool for inspecting and extracting 10-20 scalp channels from EDF files.
+
+            ### Downloads
+            | Platform | File |
+            |----------|------|
+            | 🪟 Windows | `ScalpInspector-Windows.zip` — extract and run `ScalpInspector.exe` |
+            | 🐧 Linux   | `ScalpInspector-Linux.zip` — extract and run `ScalpInspector` |
+            | 🍎 macOS   | `ScalpInspector-macOS.zip` — extract and double-click `ScalpInspector.app` |
+
+            > No Python installation required on the target machine.
+          files: release-assets/**/*.zip
+          draft: false
+          prerelease: false
