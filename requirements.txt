@@ -1,0 +1,12 @@
+# Scalp Inspector — Python dependencies
+# Install with: pip install -r requirements.txt
+
+mne>=1.6.0          # EDF reading and channel management
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+openpyxl>=3.1.0     # For reading Excel metadata files (used by map_all_patients_channels)
+
+# Standard library (no install needed):
+#   tkinter  — GUI (comes with Python on Windows/Mac; on Linux: apt install python3-tk)
+#   pathlib, threading, os, gc, warnings, datetime

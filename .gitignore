@@ -1,0 +1,85 @@
+# ── Claude Code ───────────────────────────────────────────────────────────────
+.claude/
+*.claude
+.claude_cache/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.eggs/
+*.egg-info/
+*.egg
+dist-info/
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.*
+
+# ── PyInstaller ───────────────────────────────────────────────────────────────
+build/
+dist/
+*.spec.bak
+# Keep the spec itself — it's source
+!scalp_inspector.spec
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+# Keep notebooks but strip outputs (optional — remove next line to keep outputs)
+# *.ipynb
+
+# ── Data & results (large / generated) ───────────────────────────────────────
+results/
+logs/
+*.log
+*.log.*
+$log.err
+embedding_geometry.log
+
+# Raw EDF / medical data — never commit patient data
+*.edf
+*.EDF
+*.bdf
+*.BDF
+
+# Large binary outputs
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.mat
+
+# ── IDE & OS ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Notebooks & webapp runtime ────────────────────────────────────────────────
+.ipython/
+*.pyc
+node_modules/
+static/uploads/
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.tmp
+*.bak
+*.swp
+*.swo
+archive/
